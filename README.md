@@ -1,47 +1,65 @@
 # CyberLearn LMS Platform & AI Chatbot
 
-A professional, fully-featured frontend for the CyberLearn LMS integrated with a Gemini-powered AI learning assistant.
+A professional, fully-featured frontend for the CyberLearn LMS integrated with a blazing fast Groq-powered AI learning assistant and a Python FastAPI backend.
 
 ## Features
-- **Visual Integration:** Matches CyberLearn's lavender/purple branding and rounded UI components.
-- **Authentication System:** Includes simulated Login and Registration flows using React Context and React Router. Protected routes ensure secure access to the dashboard.
-- **Intelligent Fallback:** Implements a strict 4-stage fallback logic across Gemini Flash models.
-- **Context Aware:** Designed to handle student/course context for personalized AI help based on the authenticated user.
-- **Secure:** Uses environment variables and simulated API requests for easy backend replacement later.
+- **Modern Frontend:** React-based frontend matching CyberLearn's lavender/purple branding with protected routes and authentication.
+- **FastAPI Backend:** A high-performance Python backend connecting the frontend to the database and AI services.
+- **PostgreSQL Integration:** Backend connected to Render PostgreSQL for structured data management.
+- **Groq AI Chatbot:** The assistant is powered by Groq (using Llama 3/Qwen models) for near-instant AI responses, replacing standard Gemini logic.
+- **RAG Architecture:** The AI utilizes specific internal CyberLearn policies before defaulting to standard knowledge.
+
+## Project Structure
+```text
+cyberlearn-lms/
+├── src/                # React Frontend Code
+├── backend/            # Python FastAPI Backend
+│   ├── main.py         # Backend entry point
+│   ├── groq_service.py # Groq AI integration
+│   ├── rag_service.py  # Internal knowledge retrieval
+│   └── requirements.txt
+├── .env                # Root environment variables
+└── README.md
+```
 
 ## Setup Instructions
 
-1. **Environment Variables:**
-   Rename `.env.example` to `.env` in your root folder and add your keys:
-   ```env
-   VITE_GEMINI_API_KEY=your_gemini_key_here
-   VITE_AUTH_API_URL=https://api.cyberdaksh.com/v1/auth
-   VITE_AUTH_API_KEY=your_auth_secret
+### 1. Backend Setup (FastAPI)
+1. Navigate to the backend folder:
+   ```bash
+   cd backend
    ```
+2. Create your `.env` file inside the `backend` folder:
+   ```env
+   GROQ_API_KEY=your_groq_api_key_here
+   DATABASE_URL=your_render_postgresql_url
+   FRONTEND_URL=http://localhost:5173
+   PORT=5000
+   ```
+3. Install dependencies and start the server:
+   ```bash
+   python -m venv venv
+   .\venv\Scripts\activate
+   pip install -r requirements.txt
+   uvicorn main:app --host 0.0.0.0 --port 5000
+   ```
+   *(The backend runs on `http://localhost:5000`)*
 
-2. **Install Dependencies:**
+### 2. Frontend Setup (React)
+1. Open a new terminal and stay in the root folder.
+2. Create your `.env` file in the root folder:
+   ```env
+   VITE_API_URL=http://localhost:5000
+   VITE_GOOGLE_CLIENT_ID=your_google_client_id
+   ```
+3. Install dependencies and start the dev server:
    ```bash
    npm install
-   ```
-
-3. **Start Development Server:**
-   ```bash
    npm run dev
    ```
+   *(The frontend runs on `http://localhost:5173`)*
 
-## Architecture
-
-- **`src/context/AuthContext.tsx`**: Manages the global session state (user details) and handles login/logout syncing with LocalStorage.
-- **`src/services/auth.ts`**: Contains the simulated asynchronous authentication calls. *You will replace these mock functions with real `fetch` or `axios` calls to your backend later.*
-- **`src/components/ProtectedRoute.tsx`**: A wrapper that forces unauthenticated users back to the `/login` screen.
-- **`src/components/Chatbot.tsx`**: The isolated Gemini AI Assistant logic.
-- **`src/pages/`**: Contains the `Login`, `Register`, and secure `Dashboard` screens.
-
-## Gemini Fallback Logic
-The AI system attempts to generate a response using models in this exact sequence:
-1. `gemini-3.5-flash`
-2. `gemini-2.5-flash`
-3. `gemini-3.1-flash-lite`
-4. `gemini-flash-latest`
-
-If a model fails or is unavailable, the chatbot automatically moves to the next model. Only if all four models fail will the user see an error message.
+## Deployment (Render)
+This project is configured to be deployed on Render:
+- **Backend**: Set as a "Python 3" Web Service pointing to the `backend` Root Directory. Build command is `pip install -r requirements.txt`, Start command is `uvicorn main:app --host 0.0.0.0 --port 10000`.
+- **Frontend**: Set as a "Static Site" with Build command `npm run build` and Publish directory `dist`.
