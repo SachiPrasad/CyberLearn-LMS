@@ -1,0 +1,5 @@
+fastapi[all]
+httpx
+python-dotenv
+psycopg2-binary
+uvicorn
