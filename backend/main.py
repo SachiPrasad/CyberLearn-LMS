@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 import logging
 
 from rag_service import get_relevant_context
-from gemini_service import generate_ai_response
+from groq_service import generate_ai_response
 
 # Load environment variables
 load_dotenv()
