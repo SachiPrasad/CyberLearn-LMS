@@ -1,25 +1,75 @@
+import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Bell, Menu, Play, Star, Bookmark, LayoutGrid, Search, User } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Bell, Play, Star, Bookmark, LayoutGrid, Search, User, LogOut } from 'lucide-react';
 import Chatbot from '../components/Chatbot';
 
 const Dashboard = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const [showUserMenu, setShowUserMenu] = useState(false);
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   return (
     <div className="min-h-screen bg-[#F8F9FF] pb-24 font-sans">
-      <header className="p-6 flex justify-between items-center">
-        <Menu className="text-slate-600" />
-        <h2 className="text-xl font-bold text-slate-800">CyberLearn</h2>
-        <div className="relative">
-          <Bell className="text-slate-600" />
-          <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+      <header className="p-6 flex justify-between items-center relative">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-500 flex items-center justify-center text-white font-black text-sm">
+            C
+          </div>
+          <h2 className="text-xl font-bold text-slate-800 tracking-tight">CyberLearn</h2>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <div className="relative p-2 rounded-xl bg-white shadow-sm border border-slate-100 cursor-pointer">
+            <Bell className="text-slate-600" size={20} />
+            <span className="absolute 1 top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+          </div>
+
+          <div className="relative">
+            <button
+              onClick={() => setShowUserMenu(!showUserMenu)}
+              className="flex items-center gap-2 bg-white p-1.5 pr-3 rounded-full border border-slate-100 shadow-sm hover:border-purple-200 transition-all"
+            >
+              {user?.picture ? (
+                <img src={user.picture} className="w-8 h-8 rounded-full object-cover" alt="profile" />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-purple-100 text-purple-600 font-bold flex items-center justify-center text-xs">
+                  {user?.name ? user.name[0].toUpperCase() : 'U'}
+                </div>
+              )}
+              <span className="text-xs font-bold text-slate-700 max-w-[100px] truncate">
+                {user?.name?.split(' ')[0] || 'User'}
+              </span>
+            </button>
+
+            {showUserMenu && (
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 z-50 animate-in fade-in slide-in-from-top-2">
+                <div className="px-4 py-2 border-b border-slate-50">
+                  <p className="text-xs font-bold text-slate-800 truncate">{user?.name || 'Learner'}</p>
+                  <p className="text-[10px] text-slate-400 truncate">{user?.email}</p>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="w-full px-4 py-2.5 text-left text-xs font-bold text-red-500 hover:bg-red-50 flex items-center gap-2 transition-colors"
+                >
+                  <LogOut size={14} />
+                  Sign Out
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
       <div className="p-6 space-y-8">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-black text-slate-900">Hi, {user?.name.split(' ')[0] || 'Learner'}! 👋</h1>
+            <h1 className="text-2xl font-black text-slate-900">Hi, {user?.name?.split(' ')[0] || user?.email?.split('@')[0] || 'Learner'}! 👋</h1>
             <p className="text-slate-500 text-sm font-medium">Let's continue your learning journey today.</p>
           </div>
           {user?.picture && (

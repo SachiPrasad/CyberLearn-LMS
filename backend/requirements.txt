@@ -3,3 +3,8 @@ httpx
 python-dotenv
 psycopg2-binary
 uvicorn
+sqlalchemy
+passlib[bcrypt]
+python-jose[cryptography]
+chromadb
+sentence-transformers

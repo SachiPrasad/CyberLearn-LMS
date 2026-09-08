@@ -30,6 +30,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = () => {
     setUser(null);
     localStorage.removeItem('cyberlearn_user');
+    localStorage.removeItem('access_token');
   };
 
   return (

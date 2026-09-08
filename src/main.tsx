@@ -1,15 +1,17 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { GoogleOAuthProvider } from '@react-oauth/google';
 import './index.css'
 import App from './App.tsx'
 
-const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || 'your_google_client_id_here.apps.googleusercontent.com';
+console.log("Mounting CyberLearn app...");
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <GoogleOAuthProvider clientId={clientId}>
+const root = document.getElementById('root')
+if (root) {
+  createRoot(root).render(
+    <StrictMode>
       <App />
-    </GoogleOAuthProvider>
-  </StrictMode>,
-)
+    </StrictMode>
+  )
+}
+
+

@@ -29,16 +29,14 @@ dist-ssr
 .env.*
 !.env.example
 
-# Python
+# Python & Backend Local Data
 venv/
 .venv/
 __pycache__/
 *.pyc
+*.db
+*.sqlite3
+backend/cyberlearn.db
+backend/chroma_data/
+chroma_data/
 
-# Build
-build/
-
-# Env files
-.env
-.env.*
-!.env.example

@@ -1,21 +1,34 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { Mail, Lock, User, Eye } from 'lucide-react';
+import { Mail, Lock, User, Eye, EyeOff, Loader2 } from 'lucide-react';
 import GoogleAuth from '../components/GoogleAuth';
+import { authService } from '../services/auth';
 
 const Register = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    login({ name, email });
-    navigate('/dashboard');
+    try {
+      setIsLoading(true);
+      setError('');
+      const user = await authService.register(name, email, password);
+      login(user);
+      navigate('/dashboard');
+    } catch (err: any) {
+      setError(err.message || "Registration failed");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -47,13 +60,32 @@ const Register = () => {
             <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wide">Password</label>
             <div className="relative">
               <Lock className="absolute left-4 top-3.5 text-slate-400" size={18} />
-              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Create a password" className="w-full bg-white border border-slate-200 rounded-2xl py-3.5 pl-12 pr-12 focus:ring-2 focus:ring-purple-400 outline-none transition-all" required />
-              <Eye className="absolute right-4 top-3.5 text-slate-400 cursor-pointer" size={18} />
+              <input 
+                type={showPassword ? "text" : "password"} 
+                value={password} 
+                onChange={(e) => setPassword(e.target.value)} 
+                placeholder="Create a password" 
+                className="w-full bg-white border border-slate-200 rounded-2xl py-3.5 pl-12 pr-12 focus:ring-2 focus:ring-purple-400 outline-none transition-all" 
+                required 
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-3.5 text-slate-400 hover:text-slate-600 focus:outline-none"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
           </div>
 
-          <button type="submit" className="w-full bg-gradient-to-r from-[#6366f1] to-[#a855f7] text-white font-bold py-4 rounded-2xl shadow-lg shadow-purple-200 hover:scale-[1.02] transition-transform">
-            Sign Up
+          {error && <div className="text-red-500 text-sm font-semibold text-center">{error}</div>}
+
+          <button 
+            type="submit" 
+            disabled={isLoading}
+            className="w-full bg-gradient-to-r from-[#6366f1] to-[#a855f7] text-white font-bold py-4 rounded-2xl shadow-lg shadow-purple-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 disabled:hover:scale-100 transition-all flex justify-center items-center gap-2"
+          >
+            {isLoading ? <Loader2 className="animate-spin" size={20} /> : "Sign Up"}
           </button>
         </form>
 
