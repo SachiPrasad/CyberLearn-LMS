@@ -99,7 +99,7 @@ class DAXAgentRouter:
         # ---------------------------------------------------------------------
         # 1. Out of Scope Check
         # ---------------------------------------------------------------------
-        out_of_scope_pattern = r'\b(weather|recipe|cooking|chocolate chip|stock market|bitcoin|crypto price|football|cricket score|fifa|world cup|poem|love poem|poetry|cats|dog breed|movie review|president|election|actor|celebrity)\b'
+        out_of_scope_pattern = r'\b(weather|recipe|cooking|chocolate|stock market|bitcoin|crypto price|football|cricket|fifa|world cup|match|poem|poetry|cats|dog breed|movie|inception|president|election|actor|celebrity|game|python game|flight|flights|book.*flight|hotel|car engine|fix.*car|translate.*to|capital of|airplane|joke)\b'
         if re.search(out_of_scope_pattern, q):
             return {
                 "route": ROUTE_OUT_OF_SCOPE,
@@ -116,7 +116,7 @@ class DAXAgentRouter:
 
         # A. Personal Student Aspect
         # Must specifically refer to student learning metrics (first-person or student identifiers)
-        has_first_person = bool(re.search(r'\b(my|me|i|i\'m|i am|mine|have i|did i|am i|user_id|student.*progress|progress of|score of|\'s progress|\'s score)\b', q))
+        has_first_person = bool(re.search(r'\b(my|me|i|i\'m|i am|mine|have i|did i|am i|user_id|user\s*\d+|student.*progress|student.*score|progress of|score of|\'s progress|\'s score)\b', q))
         has_student_metric = bool(re.search(r'\b(progress|score|scores|grade|grades|enrolled|enrollment|courses am i|classes am i|performing|performance|completion|completed|finished|attempts|passed|certificate earned|studying|currently studying|working on|current module|which module am i|percentage|doing|how am i doing|which module am i on)\b', q))
         has_completed_modules_q = bool(re.search(r'\b(which modules have i|how much have i completed|what have i completed|did i complete|have i finished)\b', q))
         has_student_topic_score = bool(re.search(r'\b(my score in|score in.*module|grade in|my progress in)\b', q))
@@ -133,10 +133,10 @@ class DAXAgentRouter:
 
         # C. Course Catalog / Metadata Aspect (excluding pure personal enrollment queries)
         has_course_catalog_q = bool(re.search(r'\b(search.*course|find.*course|courses with|what courses are available|available courses|all courses|list of courses|catalog|courses available|courses do you offer|courses are offered|which courses are available|cyberlearn courses|which courses can i take|which courses|show me.*courses|courses does cyberlearn offer|what courses do you offer|what courses do you have|courses you offer|courses are available)\b', q))
-        has_course_metadata_q = bool(re.search(r'\b(difficulty|how hard|prerequisite|prerequisites|how many modules|module count|total modules|topics covered|syllabus|curriculum|skills.*learn|what skills|what will i learn|labs included|what labs|practical labs|practical work|hands-on|exercises|certification is associated|certificate|certification|course status|duration of|how long is|how long does.*take|how much time|how long)\b', q))
+        has_course_metadata_q = bool(re.search(r'\b(difficulty|how hard|prerequisite|prerequisites|module|modules|how many modules|module count|total modules|topics covered|syllabus|curriculum|skills.*learn|what skills|what will i learn|lab|labs|labs included|what labs|have labs|practical labs|practical work|hands-on|exercises|certification is associated|certificate|certification|course status|duration of|how long is|how long does.*take|how much time|how long|duration)\b', q))
         has_course_recommend_q = bool(re.search(r'\b(recommend|what course should|which course should|which one should|which one is best|where should i start|beginner course|suitable for.*beginner|which course is suitable|best for.*beginner|learning path|which cyberlearn course|interested in|want to learn|getting started|new to cybersecurity)\b', q))
-        has_course_compare_q = bool(re.search(r'\b(compare|comparison|versus|\bvs\b|difference between.*course)\b', q))
-        has_course_overview_q = bool(re.search(r'\b(tell me about|overview of|details of|about the course|information on|what does.*teach|tell me what.*teaches|what.*teaches|what.*covers|what will i learn)\b', q) and (course_ref is not None or "course" in q or "that" in q)) or (bool(re.match(r'^what is\b', q)) and bool(course_ref))
+        has_course_compare_q = bool(re.search(r'\b(compare.*course|comparison.*course|difference between.*courses?)\b', q)) or (bool(re.search(r'\b(compare|comparison|versus|\bvs\b)\b', q)) and bool(re.search(r'\b(network security|ethical hacking|web security|course)\b', q)))
+        has_course_overview_q = bool(re.search(r'\b(tell me about|overview of|details of|about the course|information on|what does.*teach|tell me what.*teaches|what.*teaches|what.*covers|what will i learn)\b', q) and (course_ref is not None or "course" in q or "that" in q)) or (not has_student_aspect and bool(re.match(r'^what is\b', q)) and bool(course_ref))
 
         has_course_aspect = (
             has_course_catalog_q or
@@ -160,7 +160,8 @@ class DAXAgentRouter:
 
         # 1. MIXED ROUTE
         # Checks if inquiry spans multiple sources
-        has_mixed_course_student = (has_course_aspect or bool(re.search(r'\b(teaches|covers|syllabus|curriculum|what is.*course|what are the prerequisites|modules)\b', q))) and has_student_aspect
+        has_explicit_course_content_q = bool(re.search(r'\b(teaches|teach|what does.*teach|covers|cover|what does.*cover|syllabus|curriculum|prerequisite|prerequisites|duration|how long|difficulty|compare|versus|\bvs\b|recommend|tell me about|overview of)\b', q))
+        has_mixed_course_student = (has_explicit_course_content_q or (has_course_catalog_q and not has_enrollment_q)) and has_student_aspect
         has_mixed_rag_student = has_rag_aspect and has_student_aspect
         has_mixed_rag_course = has_rag_aspect and bool(course_ref) and bool(re.search(r'\b(part of|included in|taught in)\b', q))
 

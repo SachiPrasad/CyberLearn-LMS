@@ -64,13 +64,18 @@ origins = [
     "http://localhost:3000",
     "http://127.0.0.1:5173",
     "http://127.0.0.1:3000",
-    os.getenv("FRONTEND_URL", "http://localhost:5173"),
 ]
+
+frontend_url = os.getenv("FRONTEND_URL")
+if frontend_url:
+    for u in frontend_url.split(","):
+        u_clean = u.strip()
+        if u_clean and u_clean not in origins:
+            origins.append(u_clean)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins if os.getenv("FRONTEND_URL") != "*" else ["*"],
-    allow_origin_regex="https?://.*",
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -203,6 +208,27 @@ async def chat_endpoint(
     total_start = time.perf_counter()
 
     try:
+        # STEP 0: Empty Query Guard
+        if not req.message or not req.message.strip():
+            total_ms = (time.perf_counter() - total_start) * 1000.0
+            return {
+                "answer": "Please ask a question about CyberLearn courses, platform features, or your student progress.",
+                "sources": [],
+                "intent": "EMPTY_QUERY",
+                "route": "GENERAL",
+                "agents_used": [],
+                "confidence": 1.0,
+                "conversation_id": conv_id,
+                "request_id": request_id,
+                "latency": {
+                    "retrieval_ms": 0.0,
+                    "generation_ms": 0.0,
+                    "total_ms": round(total_ms, 2)
+                },
+                "model_used": "dax-guard",
+                "data": None
+            }
+
         # STEP 1: DAX Agent Router Execution
         routing = route_query(req.message, req.chatHistory)
         route = routing.get("route", "RAG")
@@ -329,4 +355,5 @@ async def chat_endpoint(
 if __name__ == "__main__":
     import uvicorn
     port = int(os.getenv("PORT", 5000))
-    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)
+    is_dev = os.getenv("ENVIRONMENT", "development").lower() == "development"
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=is_dev)

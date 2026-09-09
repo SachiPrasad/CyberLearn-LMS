@@ -12,10 +12,7 @@ class RAGConfig:
     # Verified Available Production Groq Models
     GROQ_FALLBACK_MODELS: List[str] = [
         os.getenv("GROQ_MODEL", "openai/gpt-oss-120b"),
-        "openai/gpt-oss-20b",
-        "qwen/qwen3.8-27b",
-        "qwen/qwen3.6-27b",
-        "allam-2-7b"
+        "openai/gpt-oss-20b"
     ]
     
     # Retrieval Hyperparameters (Configurable & Documented)
